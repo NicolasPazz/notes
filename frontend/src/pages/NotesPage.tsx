@@ -16,25 +16,28 @@ const NotesPage = () => {
     const [noteToEdit, setNoteToEdit] = useState<NoteDTO | null>(null);
 
     const fetchNotes = () => {
-        noteAPI.getAll(archived, categoryId)
-            .then(res => {
-            setNotes(res.data);
+        noteAPI
+            .getAll(archived, categoryId)
+            .then((res) => {
+                setNotes(res.data);
 
-            if (
-                categoryId !== undefined &&
-                !res.data.some(note => note.categoryIds.includes(categoryId))
-            ) {
-                setCategoryId(undefined);
-            }
+                if (
+                    categoryId !== undefined &&
+                    !res.data.some((note) =>
+                        note.categoryIds.includes(categoryId)
+                    )
+                ) {
+                    setCategoryId(undefined);
+                }
             })
-            .catch(err => console.error("Error fetching notes", err));
+            .catch((err) => console.error("Error fetching notes", err));
     };
 
-
     const fetchCategories = () => {
-        categoryAPI.getAll()
-            .then(res => setCategories(res.data))
-            .catch(err => console.error("Error fetching categories", err));
+        categoryAPI
+            .getAll()
+            .then((res) => setCategories(res.data))
+            .catch((err) => console.error("Error fetching categories", err));
     };
 
     useEffect(() => {
@@ -61,8 +64,12 @@ const NotesPage = () => {
         }
     };
 
-    const relatedCategoryIds = new Set(notes.flatMap(note => note.categoryIds));
-    const relatedCategories = categories.filter(cat => relatedCategoryIds.has(cat.id));
+    const relatedCategoryIds = new Set(
+        notes.flatMap((note) => note.categoryIds)
+    );
+    const relatedCategories = categories.filter((cat) =>
+        relatedCategoryIds.has(cat.id)
+    );
 
     return (
         <div className="p-6">
@@ -74,7 +81,7 @@ const NotesPage = () => {
 
             <PageHeader
                 archived={archived}
-                onToggle={() => setArchived(prev => !prev)}
+                onToggle={() => setArchived((prev) => !prev)}
             />
 
             {!archived && !noteToEdit && (
