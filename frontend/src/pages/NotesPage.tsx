@@ -17,9 +17,19 @@ const NotesPage = () => {
 
     const fetchNotes = () => {
         noteAPI.getAll(archived, categoryId)
-            .then(res => setNotes(res.data))
+            .then(res => {
+            setNotes(res.data);
+
+            if (
+                categoryId !== undefined &&
+                !res.data.some(note => note.categoryIds.includes(categoryId))
+            ) {
+                setCategoryId(undefined);
+            }
+            })
             .catch(err => console.error("Error fetching notes", err));
     };
+
 
     const fetchCategories = () => {
         categoryAPI.getAll()
@@ -51,12 +61,15 @@ const NotesPage = () => {
         }
     };
 
+    const relatedCategoryIds = new Set(notes.flatMap(note => note.categoryIds));
+    const relatedCategories = categories.filter(cat => relatedCategoryIds.has(cat.id));
+
     return (
         <div className="p-6">
             <CategoryFilter
                 selectedCategoryId={categoryId}
                 onChange={setCategoryId}
-                categories={categories}
+                categories={relatedCategories}
             />
 
             <PageHeader

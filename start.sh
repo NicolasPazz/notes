@@ -13,14 +13,17 @@ echo "🔧 Starting Note Full Stack App..."
 
 FRONTEND_PORT=5173
 BACKEND_PORT=3000
-SPRING_CONFIG_PATH="backend/src/main/resources/application.properties"
+SPRING_CONFIG_FILE="backend/src/main/resources/application-local.properties"
+TEMP_CONFIG=true
 
-if [[ "$PROFILE" == "postgresql" ]]; then
-  echo "🔐 Enter PostgreSQL credentials for your local installation:"
-  read -p "🧑 Username: " DB_USER
-  read -s -p "🔑 Password: " DB_PASS
-  echo ""
-  cat > "$SPRING_CONFIG_PATH" <<EOF
+create_config() {
+  case "$PROFILE" in
+    postgresql)
+      echo "🔐 Enter PostgreSQL credentials for your local installation:"
+      read -p "🧑 Username: " DB_USER
+      read -s -p "🔑 Password: " DB_PASS
+      echo ""
+      cat > "$SPRING_CONFIG_FILE" <<EOF
 spring.datasource.url=jdbc:postgresql://localhost:5432/notes_db
 spring.datasource.username=$DB_USER
 spring.datasource.password=$DB_PASS
@@ -28,19 +31,18 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 server.port=$BACKEND_PORT
+FRONTEND_URL=http://localhost:5173
 EOF
-  echo "✅ PostgreSQL config generated at $SPRING_CONFIG_PATH"
-
-elif [[ "$PROFILE" == "docker" ]]; then
-  echo "🐘 Starting PostgreSQL with Docker..."
-  docker run -d \
-    -e POSTGRES_USER=postgres \
-    -e POSTGRES_PASSWORD=1234 \
-    -e POSTGRES_DB=notes_db \
-    -p 5432:5432 \
-    --name notes_pg postgres:15
-
-  cat > "$SPRING_CONFIG_PATH" <<EOF
+      ;;
+    docker)
+      echo "🐘 Starting PostgreSQL with Docker..."
+      docker run -d \
+        -e POSTGRES_USER=postgres \
+        -e POSTGRES_PASSWORD=1234 \
+        -e POSTGRES_DB=notes_db \
+        -p 5432:5432 \
+        --name notes_pg postgres:15
+      cat > "$SPRING_CONFIG_FILE" <<EOF
 spring.datasource.url=jdbc:postgresql://localhost:5432/notes_db
 spring.datasource.username=postgres
 spring.datasource.password=1234
@@ -48,14 +50,14 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 server.port=$BACKEND_PORT
+FRONTEND_URL=http://localhost:5173
 EOF
-  echo "✅ Docker-based PostgreSQL config generated at $SPRING_CONFIG_PATH"
-
-elif [[ "$PROFILE" == "h2" ]]; then
-  echo "🗃️ Using H2 (file-based persistence)..."
-  mkdir -p backend/data
-  H2_PATH="file:./backend/data/notes"
-  cat > "$SPRING_CONFIG_PATH" <<EOF
+      ;;
+    h2)
+      echo "🗃️ Using H2 (file-based persistence)..."
+      mkdir -p backend/data
+      H2_PATH="file:./backend/data/notes"
+      cat > "$SPRING_CONFIG_FILE" <<EOF
 spring.datasource.url=jdbc:h2:$H2_PATH
 spring.datasource.driverClassName=org.h2.Driver
 spring.datasource.username=sa
@@ -65,21 +67,37 @@ spring.jpa.show-sql=true
 spring.h2.console.enabled=true
 spring.h2.console.path=/h2-console
 server.port=$BACKEND_PORT
+FRONTEND_URL=http://localhost:5173
 EOF
-  echo "✅ H2 config generated at $SPRING_CONFIG_PATH"
+      ;;
+    *)
+      echo "❌ PROFILE '$PROFILE' not supported. Use 'postgresql', 'docker' or 'h2'."
+      exit 1
+      ;;
+  esac
+  echo "✅ Temporary config generated at $SPRING_CONFIG_FILE"
+}
 
-else
-  echo "❌ PROFILE '$PROFILE' not supported. Use 'postgresql', 'docker' or 'h2'."
-  exit 1
-fi
+cleanup() {
+  echo "🧹 Cleaning up..."
+  if [[ -f "$SPRING_CONFIG_FILE" && "$TEMP_CONFIG" = true ]]; then
+    rm "$SPRING_CONFIG_FILE"
+    echo "🗑️ Removed $SPRING_CONFIG_FILE"
+  fi
+  docker stop notes_pg >/dev/null 2>&1 || true
+  docker rm notes_pg >/dev/null 2>&1 || true
+  kill $BACK_PID $FRONT_PID >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+create_config
 
 echo "🚀 Starting Spring Boot backend..."
 cd backend
-./mvnw spring-boot:run &
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=local" &
 BACK_PID=$!
 cd ..
 
-# Wait for backend to be available
 echo "⏳ Waiting for backend to start..."
 until curl -s "http://localhost:$BACKEND_PORT/api/notes" >/dev/null; do
   sleep 1
@@ -97,7 +115,6 @@ cd ..
 
 sleep 2
 
-# Open in browser
 URL="http://localhost:$FRONTEND_PORT"
 if command -v xdg-open > /dev/null; then
   xdg-open "$URL"
@@ -109,8 +126,4 @@ else
   echo "🌍 Open manually: $URL"
 fi
 
-# Cleanup processes on exit
-trap "kill $BACK_PID $FRONT_PID; docker stop notes_pg >/dev/null 2>&1 || true" EXIT
-
-# Keep processes alive
 wait
