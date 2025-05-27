@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+body {
+  @apply bg-gray-100 text-gray-900 font-sans m-0 p-4;
+}
+
+/* Headings */
+h1, h2, h3, h4 {
+  @apply text-blue-900 font-semibold mb-2;
+}
+
+h2 {
+  @apply text-2xl;
+}
+
+h3 {
+  @apply text-lg;
+}
+
+/* Paragraph and text */
+p {
+  @apply text-sm mb-2;
+}
+
+/* Forms */
+input[type="text"],
+textarea,
+select {
+  @apply w-full p-2 mb-3 border border-gray-300 rounded;
+}
+
+/* Buttons */
+button {
+  @apply px-4 py-2 rounded text-white font-semibold transition;
+}
+
+button[type="submit"] {
+  @apply bg-green-600 hover:bg-green-700;
+}
+
+button[type="button"] {
+  @apply px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-900;
+}
+
+/* Utility buttons */
+button.edit {
+  @apply bg-yellow-400 text-black hover:bg-yellow-500;
+}
+
+button.delete {
+  @apply bg-red-600 hover:bg-red-700;
+}
+
+/* Lists */
+ul {
+  @apply space-y-3 mt-6;
+}
+
+li {
+  @apply p-4 bg-white rounded shadow flex justify-between items-center;
+}
+
+/* Category badges */
+span.badge {
+  @apply bg-gray-200 text-sm px-3 py-1 rounded-full flex items-center;
+}
+
+span.badge button {
+  @apply ml-2 text-red-600 hover:text-red-800 font-bold;
+}
+
+/* Labels */
+label {
+  @apply text-sm block mb-1;
+}
+
+/* Responsive containers */
+form {
+  @apply mb-6;
+}
