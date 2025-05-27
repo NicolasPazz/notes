@@ -48,7 +48,7 @@ To run this app you need:
 
 ---
 
-## 🖥️ Running the App
+## 🖥️ Running the App Locally
 
 Use the provided `start.sh` script:
 
@@ -86,7 +86,7 @@ http://localhost:5173
 
 ## 🌍 Deployment
 
-> This project has not been deployed. Local execution is required.
+> https://notes-pi-two.vercel.app/
 
 ---
 
