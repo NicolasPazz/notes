@@ -54,16 +54,15 @@ public class NoteServiceImpl implements NoteService {
     List<Note> notes;
 
     if (categoryId != null) {
-      notes = noteRepository.findByArchivedAndCategories_Id(archived, categoryId);
+      notes = noteRepository.findByArchivedAndCategoryIdWithCategories(archived, categoryId);
     } else {
-      notes = noteRepository.findByArchived(archived);
+      notes = noteRepository.findByArchivedWithCategories(archived);
     }
 
     return notes.stream()
         .map(this::toDTO)
         .toList();
   }
-
 
   @Override
   public NoteDTO getById(Long id) {
