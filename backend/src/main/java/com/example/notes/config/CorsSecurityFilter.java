@@ -26,6 +26,11 @@ public class CorsSecurityFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
+        if (req.getRequestURI().equals("/api/health")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (isProd()) {
             String referer = req.getHeader("Referer");
             String origin = req.getHeader("Origin");
