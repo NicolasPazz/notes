@@ -1,123 +1,51 @@
-# 📝 Notes Full Stack App
+# Notes
 
-A full stack web application to manage notes with category assignment and filtering. Built with Spring Boot (Java), React (TypeScript), and Tailwind CSS.
+Full stack app to create, edit, archive and delete notes, organize them with categories and filter by category.
 
-## 📦 Project Structure
+**Live demo:** https://notes-pi-two.vercel.app/
+
+## Tech stack
+
+- **Backend:** Java 17, Spring Boot 3, Spring Data JPA, PostgreSQL (H2 for local use and tests)
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Axios
+
+## Structure
 
 ```
-.
-├── backend/        # Spring Boot + JPA (Java 17)
-├── frontend/       # React + TypeScript + Vite + Tailwind CSS
-├── start.sh        # Shell script to launch everything
-└── README.md
+backend/    Spring Boot REST API (layered: controller → service → repository)
+frontend/   React + TypeScript single-page app
+start.sh    Starts backend and frontend locally
 ```
 
----
+## Run locally
 
-## ✅ Requirements
-
-To run this app you need:
-
--   Java 17
--   Node.js 18.17+
--   npm 9+
--   Maven 3.9+
--   Bash (for Linux/macOS) or Git Bash (for Windows)
--   One of the following options for persistence:
-    -   PostgreSQL installed locally
-    -   Docker (to use PostgreSQL via container)
-    -   Nothing (uses H2 file-based persistence)
-
----
-
-## 🚀 Technologies Used
-
-### Backend
-
--   Java 17
--   Spring Boot 3.5.0
--   Spring Data JPA
--   PostgreSQL / H2
--   Maven
-
-### Frontend
-
--   React 18
--   TypeScript 5
--   Vite 6.3.5
--   Tailwind CSS 3.4.3
--   Axios
-
----
-
-## 🖥️ Running the App Locally
-
-Use the provided `start.sh` script:
+Requirements: Java 17, Node.js 18+, Bash (Git Bash on Windows). Docker or a local PostgreSQL are optional.
 
 ```bash
-./start.sh [profile]
+./start.sh h2          # file-based H2 database, nothing to install
+./start.sh docker      # PostgreSQL in a Docker container
+./start.sh postgresql  # local PostgreSQL (asks for credentials)
 ```
 
-Where `[profile]` is one of:
+The app opens at `http://localhost:5173` and the API runs on port 3000.
 
--   `postgresql`: Prompts for your local DB username and password.
--   `docker`: Uses PostgreSQL in a Docker container.
--   `h2`: Uses H2 with file-based persistence (no installation required).
+## API
 
-Examples:
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/health` | Health check |
+| `GET` / `POST` | `/api/notes` | List (optionally filtered) / create notes |
+| `GET` / `PUT` / `DELETE` | `/api/notes/{id}` | Get / update / delete a note |
+| `GET` / `POST` | `/api/categories` | List / create categories |
+| `GET` / `PUT` / `DELETE` | `/api/categories/{id}` | Get / update / delete a category |
+
+In production the API only accepts requests coming from the configured frontend origin (`FRONTEND_URL`).
+
+## Tests
 
 ```bash
-./start.sh h2
-./start.sh docker
-./start.sh postgresql
+cd backend
+./mvnw test
 ```
 
-Once running, the app will open in your browser at:
-
-```
-http://localhost:5173
-```
-
----
-
-## 🔐 Credentials
-
-> No login is required for this application.
-
----
-
-## 🌍 Deployment
-
-> https://notes-pi-two.vercel.app/
-
----
-
-## 📁 Data Persistence
-
--   Data is stored using a relational database (PostgreSQL or H2).
--   H2 uses a file-based DB at `./notes-db.mv.db` for persistence across sessions.
-
----
-
-## 🧪 Notes
-
--   Notes can be created, listed, deleted, and filtered by category.
--   Categories are dynamically created on the frontend.
--   Notes can be archived (via a toggle in the UI).
-
----
-
-## ✨ Extra Features
-
--   Switch between active and archived notes.
--   Filter notes by category.
--   Responsive UI styled with Tailwind CSS.
-
----
-
-## 🔧 Setup Issues
-
-If you encounter errors:
-
--   Make sure PostgreSQL is running on port `5432`.
--   If Docker is used, ensure it is installed and running.
+The tests run against an in-memory H2 database.

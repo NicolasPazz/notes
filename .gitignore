@@ -1,2 +1,5 @@
 .vscode/
 .fake
+# Local H2 database files
+*.mv.db
+*.trace.db
